@@ -352,6 +352,14 @@ static MatchResult host_part_matches(Utf16View pattern, Optional<URL::Host> cons
 
     auto const& host = maybe_host.value();
 
+    // NB: Deviation from the spec: Other browsers let a source expression match a literal IPv4 or IPv6 address when it
+    //     names exactly that address, and sites served from e.g. http://127.0.0.1:1234 rely on this. Wildcards never
+    //     match an IP address.
+    if (host.has<IPv4Address>() || host.has<IPv6Address>()) {
+        auto serialized_host = host.serialize();
+        return equals_ignoring_ascii_case(pattern, serialized_host.bytes_as_string_view()) ? MatchResult::Matches : MatchResult::DoesNotMatch;
+    }
+
     if (!host.is_domain())
         return MatchResult::DoesNotMatch;
 

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src="../include.js"></script>
+<script>
+    asyncTest(async done => {
+        const script = document.createElement("script");
+        script.src = `http://127.0.0.1:${internals.getEchoServerPort()}/common/blank.html`;
+
+        const result = new Promise(resolve => {
+            document.addEventListener("securitypolicyviolation", () => resolve("blocked"), { once: true });
+            script.addEventListener("load", () => resolve("allowed"), { once: true });
+            script.addEventListener("error", () => resolve("allowed"), { once: true });
+        });
+        document.body.appendChild(script);
+
+        println(`script from 127.0.0.1: ${await result}`);
+        done();
+    });
+</script>
